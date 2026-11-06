@@ -7,6 +7,9 @@ export const getAllUsersFromDatabase = () => db.getObjectDefault<User[]>("/users
 export const getAllProductsFromDatabase = () => db.getObjectDefault<Product[]>("/products", []);
 export const getAllOrdersFromDatabase = () => db.getObjectDefault<Order[]>("/orders", []);
 
+export const saveAllProductsToDatabase = (allProducts: Product[]) => db.push("/products", allProducts);
+export const saveAllOrdersToDatabase = (allOrders: Order[]) => db.push("/orders", allOrders);
+
 
 export const seedDatabaseWithDefaultUsersAndProductsIfEmpty = async () => {
   // Users
