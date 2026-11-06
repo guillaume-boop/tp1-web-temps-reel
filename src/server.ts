@@ -11,6 +11,7 @@ import {
     broadcastOrderEventToGlobalAndOrderSubscribers,
     broadcastStockChangeToGlobalSubscribers,
     subscribeToAllOrderAndStockEvents,
+    subscribeToSingleOrderEvents,
 } from "./sse.js";
 import type { Order, Status } from "./types.js";
 
@@ -43,6 +44,17 @@ const PORT = Number(process.env.PORT) || 3000;
 app.get("/health", (_req, res) => { res.json({ status: "ok" }); });
 
 app.get("/events", (_req, res) => { subscribeToAllOrderAndStockEvents(res); });
+
+app.get("/orders/:id/events", async (req, res) => {
+    const followedOrderId = Number(req.params.id);
+    try {
+        const followedOrder = (await getAllOrdersFromDatabase()).find((order) => order.id === followedOrderId);
+        if (!followedOrder) { return res.status(404).json({ error: "Order not found" }); }
+        return subscribeToSingleOrderEvents(res, followedOrder);
+    } catch {
+        return res.status(500).json({ error: "Server error" });
+    }
+});
 
 app.get("/users", async (_req, res) => {
     try { return res.json(await getAllUsersFromDatabase()); } 

@@ -1,0 +1,23 @@
+<body>
+    <h1>Commande n°<span id="followed-order-id"></span></h1>
+    <p>Statut : <strong id="followed-order-status">connexion…</strong></p>
+
+    <script>
+        const followedOrderId = new URLSearchParams(location.search).get("id");
+        const statusLabels = { preparing: "En préparation", shipped: "Expédiée", delivered: "Livrée", cancelled: "Annulée" };
+
+        document.getElementById("followed-order-id").textContent = followedOrderId;
+
+        const displayFollowedOrderStatus = (serverSentEvent) => {
+            const followedOrder = JSON.parse(serverSentEvent.data);
+            document.getElementById("followed-order-status").textContent = statusLabels[followedOrder.status];
+        };
+
+        const followedOrderEventSource = new EventSource(`/orders/${followedOrderId}/events`);
+        followedOrderEventSource.addEventListener("order-snapshot", displayFollowedOrderStatus);
+        followedOrderEventSource.addEventListener("order-status-changed", displayFollowedOrderStatus);
+        followedOrderEventSource.addEventListener("order-cancelled", displayFollowedOrderStatus);
+        followedOrderEventSource.onerror = () => { console.log("Coupure, reconnexion automatique…"); };
+    </script>
+</body>
+</html>
